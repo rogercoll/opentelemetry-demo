@@ -12,6 +12,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Instrumentation.StackExchangeRedis;
 using OpenTelemetry.Logs;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.ResourceDetectors.Container;
 using OpenTelemetry.ResourceDetectors.Host;
@@ -30,7 +31,6 @@ if (string.IsNullOrEmpty(redisAddress))
 }
 
 builder.Logging
-    .AddOpenTelemetry(options => options.AddOtlpExporter())
     .AddConsole();
 
 builder.Services.AddSingleton<ICartStore>(x=>
@@ -65,15 +65,9 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracerBuilder => tracerBuilder
         .AddRedisInstrumentation(
             options => options.SetVerboseDatabaseStatements = true)
-        .AddAspNetCoreInstrumentation()
-        .AddGrpcClientInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter())
+        .AddAspNetCoreInstrumentation())
     .WithMetrics(meterBuilder => meterBuilder
-        .AddProcessInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddAspNetCoreInstrumentation()
-        .AddOtlpExporter());
+        .AddAspNetCoreInstrumentation());
 OpenFeature.Api.Instance.AddHooks(new TracingHook());
 builder.Services.AddGrpc();
 builder.Services.AddGrpcHealthChecks()

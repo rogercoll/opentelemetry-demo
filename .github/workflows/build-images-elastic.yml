@@ -3,10 +3,12 @@ name: Test image generation
 on:
   push:
     paths:
+      - '.github/**'
       - 'src/**'
       - 'test/**'
 
 jobs:
   build_images:
     if: github.repository == 'elastic/opentelemetry-demo'
-    uses: ./.github/workflows/component_build_images-elastic.yml
+    uses: ./.github/workflows/component_build-images-elastic.yml
+

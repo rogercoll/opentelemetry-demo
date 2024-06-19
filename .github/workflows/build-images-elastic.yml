@@ -2,10 +2,9 @@ name: Test image generation
 
 on:
   push:
-    paths:
-      - '.github/**'
-      - 'src/**'
-      - 'test/**'
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build_images:

@@ -7,7 +7,7 @@ on:
 jobs:
   merge_upstream:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -18,20 +18,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           UPSTREAM: https://github.com/open-telemetry/opentelemetry-demo
-        run: |       
+        run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
-          
+
           git remote add upstream "${UPSTREAM}"
 
           # Get all recent branches and commits from the upstream
           git fetch upstream main
 
-          git rebase upstream/main
+          git merge upstream/main --no-edit || { echo "Merge conflicts detected. Please resolve them manually."; exit 1; }
 
-          if [ "$(git status | grep diverged)" ]; then
-            git push origin $(git branch --show-current) --force;
-          fi;
+          git push origin $(git branch --show-current)
+
   notify-failure:
     needs: [merge_upstream]
     if: always() && needs.merge_upstream.result != 'success'
@@ -53,4 +52,4 @@ jobs:
           :wave:
           Auto-merge of the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|elastic/opentelemetry-demo> repository with the upstream failed!
           Manual resolution of the merge conflicts is required!
-  
+

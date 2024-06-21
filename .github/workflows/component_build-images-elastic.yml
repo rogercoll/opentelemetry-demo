@@ -52,7 +52,7 @@ jobs:
             tag_suffix: emailservice
             context: ./src/emailservice
             setup-qemu: true
-          - file: ./src/frauddetectionservice/Dockerfile
+          - file: ./src/frauddetectionservice/Dockerfile.elastic
             tag_suffix: frauddetectionservice
             context: ./
             setup-qemu: true

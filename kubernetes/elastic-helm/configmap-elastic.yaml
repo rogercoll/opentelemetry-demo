@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastic-otelcol-agent
+  namespace: default
+  labels:
+    app.kubernetes.io/name: otelcol
+
+data:
+  relay: |
+    connectors:
+      spanmetrics: {}
+    exporters:
+      debug: {}
+      otlp/elastic:
+        endpoint: ${env:ELASTIC_APM_ENDPOINT}
+        compression: none
+        headers:
+          Authorization: Bearer ${ELASTIC_APM_SECRET_TOKEN}
+    extensions:
+    processors:
+      batch: {}
+    receivers:
+      httpcheck/frontendproxy:
+        targets:
+        - endpoint: http://example-frontendproxy:8080
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:MY_POD_IP}:4317
+          http:
+            cors:
+              allowed_origins:
+              - http://*
+              - https://*
+            endpoint: ${env:MY_POD_IP}:4318
+    service:
+      extensions:
+      pipelines:
+        logs:
+          exporters:
+          - debug
+          - otlp/elastic
+          processors:
+          - batch
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - otlp/elastic
+          - debug
+          processors:
+          - batch
+          receivers:
+          - httpcheck/frontendproxy
+          - otlp
+          - spanmetrics
+        traces:
+          exporters:
+          - otlp/elastic
+          - debug
+          - spanmetrics
+          processors:
+          - batch
+          receivers:
+          - otlp
+      telemetry:
+        metrics:
+          address: ${env:MY_POD_IP}:8888
+

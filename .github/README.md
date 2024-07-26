@@ -49,10 +49,10 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
    helm repo update open-telemetry
 
    # deploy the configuration for the Elastic OpenTelemetry collector distribution
-   kubectl apply -f configmap-elastic.yaml
+   kubectl apply -f configmap-deployment.yaml
 
    # deploy the demo through helm install
-   helm install -f values.yaml my-otel-demo open-telemetry/opentelemetry-demo
+   helm install -f deployment.yaml my-otel-demo open-telemetry/opentelemetry-demo
    ```
 
 #### Kubernetes monitoring
@@ -60,10 +60,27 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 This demo already enables cluster level metrics collection with `clusterMetrics` and
 Kubernetes events collection with `kubernetesEvents`.
 
-In order to add Node level metrics collection and autodiscovery for Redis Pods
-we can run an additional Otel collector Daemonset with the following:
+In order to add Node level metrics collection we can run an additional Otel collector Daemonset with the following:
 
-`helm install daemonset open-telemetry/opentelemetry-collector --values daemonset.yaml`
+1. Create a secret in Kubernetes with the following command.
+   ```
+   kubectl create secret generic elastic-secret-ds \
+     --from-literal=elastic_endpoint='YOUR_ELASTICSEARCH_ENDPOINT' \
+     --from-literal=elastic_api_key='YOUR_ELASTICSEARCH_API_KEY'
+   ```
+   Don't forget to replace
+   - `YOUR_ELASTICSEARCH_ENDPOINT`: your Elasticsearch endpoint (example: `1234567.us-west2.gcp.elastic-cloud.com:443`).
+   - `YOUR_ELASTICSEARCH_API_KEY`: your Elasticsearch API Key
+
+2. Execute the following command to deploy the OpenTelemetry Collector to your Kubernetes cluster:
+
+```
+# deploy the configuration for the Elastic OpenTelemetry collector distribution
+kubectl apply -f configmap-daemonset.yaml
+
+# deploy the Elastic OpenTelemetry collector distribution through helm install
+helm install otel-daemonset open-telemetry/opentelemetry-collector --values daemonset.yaml
+```
 
 ## Explore and analyze the data With Elastic
 

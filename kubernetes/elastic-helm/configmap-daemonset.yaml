@@ -228,6 +228,8 @@ data:
         k8s_api_config:
           auth_type: serviceAccount
         metrics:
+          k8s.pod.memory.node.utilization:
+            enabled: true
           k8s.pod.cpu.node.utilization:
             enabled: true
           k8s.container.cpu_limit_utilization:

@@ -72,7 +72,7 @@ jobs:
             tag_suffix: imageprovider
             context: ./
             setup-qemu: true
-          - file: ./src/kafka/Dockerfile
+          - file: ./src/kafka/Dockerfile.elastic
             tag_suffix: kafka
             context: ./
             setup-qemu: true

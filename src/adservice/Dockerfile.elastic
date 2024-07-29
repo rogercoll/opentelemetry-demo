@@ -23,6 +23,7 @@ COPY --from=builder /usr/src/app/ ./
 ADD --chmod=644 https://repo1.maven.org/maven2/co/elastic/otel/elastic-otel-javaagent/$version/elastic-otel-javaagent-$version.jar /usr/src/app/opentelemetry-javaagent.jar
 ENV JAVA_TOOL_OPTIONS=-javaagent:/usr/src/app/opentelemetry-javaagent.jar
 ENV ELASTIC_OTEL_INFERRED_SPANS_ENABLED=true
+ENV ELASTIC_OTEL_SPAN_STACK_TRACE_MIN_DURATION=2
 
 EXPOSE ${AD_SERVICE_PORT}
 ENTRYPOINT [ "./build/install/opentelemetry-demo-ad-service/bin/AdService" ]

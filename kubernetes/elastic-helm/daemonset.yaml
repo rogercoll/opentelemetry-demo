@@ -47,3 +47,22 @@ extraEnvs:
 configMap:
   create: false
   existingName: elastic-otelcol-agent-ds
+
+# kubeletstats additional rules for Node metrics
+clusterRole:
+  create: true
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - nodes/proxy
+      verbs:
+        - get
+    - apiGroups:
+        - ""
+      resources:
+        - nodes
+      verbs:
+        - get
+        - watch
+        - list

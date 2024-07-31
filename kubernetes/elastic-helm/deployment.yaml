@@ -9,7 +9,7 @@ opentelemetry-collector:
     tag: 8.15.0-SNAPSHOT
   command:
     name: "/usr/share/elastic-agent/elastic-agent"
-    extraArgs: ["otel", "-c", "/etc/elastic-agent/otel.yaml"]
+    extraArgs: ["otel"]
   mode: "deployment"
   presets:
     kubernetesAttributes:

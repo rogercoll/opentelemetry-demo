@@ -1,7 +1,7 @@
 default:
   image:
     repository: ghcr.io/elastic/opentelemetry-demo
-    tag: 1.10.1
+    tag: 1.11.2
 
 opentelemetry-collector:
   image:

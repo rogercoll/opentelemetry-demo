@@ -37,7 +37,7 @@ data:
       resourcedetection/gcp:
         detectors: [env, gcp]
         timeout: 2s
-        override: false
+        override: true
       resource/k8s:
         attributes:
           - key: service.name

@@ -2,7 +2,9 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
       http:
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
         cors:
           allowed_origins:
             - "http://*"
@@ -13,6 +15,20 @@ exporters:
 
 processors:
   batch:
+  transform:
+    error_mode: ignore
+    trace_statements:
+      - context: span
+        conditions:
+          - IsString(attributes["http.url"])
+        statements:
+          - merge_maps(attributes, URL(attributes["http.url"]), "upsert")
+          - set(name, attributes["url.path"])
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: "opentelemetry-demo"
+        action: upsert
 
 connectors:
   spanmetrics:

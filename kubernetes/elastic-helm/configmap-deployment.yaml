@@ -9,6 +9,9 @@ metadata:
 
 data:
   relay: |
+    extensions:
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
     connectors:
       spanmetrics: {}
     exporters:
@@ -18,7 +21,6 @@ data:
         compression: none
         headers:
           Authorization: Bearer ${env:ELASTIC_APM_SECRET_TOKEN}
-    extensions:
     processors:
       batch: {}
       resource:
@@ -42,6 +44,7 @@ data:
             endpoint: ${env:MY_POD_IP}:4318
     service:
       extensions:
+        - health_check
       pipelines:
         logs:
           exporters:

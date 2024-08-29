@@ -9,6 +9,9 @@ metadata:
 
 data:
   relay: |
+    extensions:
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
     exporters:
       debug:
       elasticsearch:
@@ -253,6 +256,7 @@ data:
         extra_metadata_labels:
           - container.id
     service:
+      extensions: [health_check]
       pipelines:
         logs:
           receivers: [filelog]

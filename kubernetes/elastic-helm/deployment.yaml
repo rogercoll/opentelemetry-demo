@@ -35,10 +35,7 @@ default:
 opentelemetry-collector:
   image:
     repository: docker.elastic.co/beats/elastic-agent
-    tag: 8.15.0-SNAPSHOT
-  command:
-    name: "/usr/share/elastic-agent/elastic-agent"
-    extraArgs: ["otel"]
+    tag: 8.16.0-SNAPSHOT
   mode: "deployment"
   presets:
     kubernetesAttributes:
@@ -49,6 +46,8 @@ opentelemetry-collector:
       enabled: true
 
   extraEnvs:
+    - name: ELASTIC_AGENT_OTEL
+      value: "true"
     - name: ELASTIC_APM_ENDPOINT
       valueFrom:
         secretKeyRef:
@@ -63,15 +62,6 @@ opentelemetry-collector:
   configMap:
     create: false
     existingName: elastic-otelcol-agent
-
-  livenessProbe:
-    httpGet:
-      port: 8888
-      path: metrics
-  readinessProbe:
-    httpGet:
-      port: 8888
-      path: metrics
 
 opensearch:
   enabled: false

@@ -1,7 +1,7 @@
 default:
   image:
     repository: ghcr.io/elastic/opentelemetry-demo
-    tag: 1.11.3
+    tag: 1.11.4
   envOverrides:
     - name: OTEL_SERVICE_NAME
       valueFrom:
@@ -59,9 +59,78 @@ opentelemetry-collector:
           name: elastic-secret
           key: elastic_apm_secret_token
 
-  configMap:
-    create: false
-    existingName: elastic-otelcol-agent
+  alternateConfig:
+    extensions:
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
+    connectors:
+      spanmetrics: {}
+    exporters:
+      debug: {}
+      otlp/elastic:
+        endpoint: ${env:ELASTIC_APM_ENDPOINT}
+        compression: none
+        headers:
+          Authorization: Bearer ${env:ELASTIC_APM_SECRET_TOKEN}
+    processors:
+      batch: {}
+      resource:
+        attributes:
+          - key: deployment.environment
+            value: "opentelemetry-demo"
+            action: upsert
+    receivers:
+      httpcheck/frontendproxy:
+        targets:
+        - endpoint: http://example-frontendproxy:8080
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:MY_POD_IP}:4317
+          http:
+            cors:
+              allowed_origins:
+              - http://*
+              - https://*
+            endpoint: ${env:MY_POD_IP}:4318
+    service:
+      extensions:
+        - health_check
+      pipelines:
+        logs:
+          exporters:
+          - debug
+          - otlp/elastic
+          processors:
+          - batch
+          - resource
+          receivers:
+          - otlp
+        metrics:
+          exporters:
+          - otlp/elastic
+          - debug
+          processors:
+          - batch
+          - resource
+          receivers:
+          - httpcheck/frontendproxy
+          - otlp
+          - spanmetrics
+        traces:
+          exporters:
+          - otlp/elastic
+          - debug
+          - spanmetrics
+          processors:
+          - batch
+          - resource
+          receivers:
+          - otlp
+      telemetry:
+        metrics:
+          address: ${env:MY_POD_IP}:8888
+
 
 opensearch:
   enabled: false

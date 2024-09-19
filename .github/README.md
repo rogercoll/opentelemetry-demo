@@ -49,9 +49,6 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
    # !(when an older helm open-telemetry repo exists) update the open-telemetry helm repo
    helm repo update open-telemetry
 
-   # deploy the configuration for the Elastic OpenTelemetry collector distribution
-   kubectl apply -f configmap-deployment.yaml
-
    # deploy the demo through helm install
    helm install -f deployment.yaml my-otel-demo open-telemetry/opentelemetry-demo
    ```
@@ -76,9 +73,6 @@ In order to add Node level metrics collection we can run an additional Otel coll
 2. Execute the following command to deploy the OpenTelemetry Collector to your Kubernetes cluster:
 
 ```
-# deploy the configuration for the Elastic OpenTelemetry collector distribution
-kubectl apply -f configmap-daemonset.yaml
-
 # deploy the Elastic OpenTelemetry collector distribution through helm install
 helm install otel-daemonset open-telemetry/opentelemetry-collector --values daemonset.yaml
 ```

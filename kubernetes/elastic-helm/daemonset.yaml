@@ -61,7 +61,7 @@ config:
   exporters:
     debug:
       verbosity: basic
-    elasticsearch:
+    elasticsearch/ecs:
       endpoints:
       - ${env:ELASTIC_ENDPOINT}
       api_key: ${env:ELASTIC_API_KEY}
@@ -71,11 +71,22 @@ config:
         enabled: true
       mapping:
         mode: ecs
+    elasticsearch/otel:
+      endpoints:
+      - ${env:ELASTIC_ENDPOINT}
+      api_key: ${env:ELASTIC_API_KEY}
+      logs_dynamic_index:
+        enabled: true
+      metrics_dynamic_index:
+        enabled: true
+      mapping:
+        mode: otel
   processors:
     batch: {}
     elasticinframetrics:
       add_system_metrics: true
       add_k8s_metrics: true
+      drop_original: true
     resourcedetection/eks:
       detectors: [env, eks]
       timeout: 15s
@@ -93,11 +104,6 @@ config:
         - key: service.name
           from_attribute: app.label.component
           action: insert
-    attributes/k8s_logs_dataset:
-      actions:
-        - key: data_stream.dataset
-          value: "kubernetes.container_logs"
-          action: upsert
     attributes/dataset:
       actions:
         - key: event.dataset
@@ -311,12 +317,16 @@ config:
     pipelines:
       logs:
         receivers: [filelog]
-        processors: [batch, k8sattributes, resourcedetection/system, resourcedetection/eks, resourcedetection/gcp, resource/demo, resource/k8s, resource/cloud, attributes/k8s_logs_dataset]
-        exporters: [debug, elasticsearch]
+        processors: [batch, k8sattributes, resourcedetection/system, resourcedetection/eks, resourcedetection/gcp, resource/demo, resource/k8s, resource/cloud]
+        exporters: [debug, elasticsearch/otel]
       metrics:
         receivers: [hostmetrics, kubeletstats]
         processors: [batch, k8sattributes, elasticinframetrics, resourcedetection/system, resource/demo, resourcedetection/eks, resourcedetection/gcp, resource/k8s, resource/cloud, attributes/dataset, resource/process]
-        exporters: [debug, elasticsearch]
+        exporters: [debug, elasticsearch/ecs]
+      metrics/otel:
+        receivers: [kubeletstats]
+        processors: [batch, k8sattributes, resourcedetection/system, resource/demo, resourcedetection/eks, resourcedetection/gcp, resource/k8s, resource/cloud]
+        exporters: [debug, elasticsearch/otel]
       traces: null
     telemetry:
       metrics:

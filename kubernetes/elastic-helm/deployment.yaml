@@ -52,6 +52,13 @@ opentelemetry-collector:
     clusterMetrics:
       enabled: true
 
+  extraVolumes:
+    - name: apmdb
+
+  extraVolumeMounts:
+  - name: apmdb
+    mountPath: /apmdb
+
   extraEnvs:
     - name: ELASTIC_AGENT_OTEL
       value: "true"
@@ -341,6 +348,7 @@ opentelemetry-collector:
       elastictrace: {} # The processor enriches traces with elastic specific requirements.
       # [LSM Interval Processor](https://github.com/elastic/opentelemetry-collector-components/tree/main/processor/lsmintervalprocessor)
       lsminterval:
+        directory: "/apmdb"
         intervals:
           - duration: 1m
             statements:

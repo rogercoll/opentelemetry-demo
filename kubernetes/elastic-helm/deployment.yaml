@@ -37,13 +37,14 @@ opentelemetry-collector:
     repository: docker.elastic.co/beats/elastic-agent
     tag: 8.16.0-SNAPSHOT
   mode: "deployment"
+  useGOMEMLIMIT: false
   resources:
     limits:
-      cpu: 100m
-      memory: 500Mi
+      cpu: 1500m
+      memory: 1500Mi
     requests:
-      cpu: 100m
-      memory: 500Mi
+      cpu: 250m
+      memory: 1500Mi
   presets:
     kubernetesAttributes:
       enabled: true
@@ -51,13 +52,6 @@ opentelemetry-collector:
       enabled: true
     clusterMetrics:
       enabled: true
-
-  extraVolumes:
-    - name: apmdb
-
-  extraVolumeMounts:
-  - name: apmdb
-    mountPath: /apmdb
 
   extraEnvs:
     - name: ELASTIC_AGENT_OTEL
@@ -72,6 +66,12 @@ opentelemetry-collector:
         secretKeyRef:
           name: elastic-secret-ds
           key: elastic_api_key
+    - name: GOMAXPROCS
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.cpu
+    - name: GOMEMLIMIT
+      value: "1025MiB"
 
   alternateConfig:
     extensions:
@@ -134,6 +134,7 @@ opentelemetry-collector:
             unit: us
             exponential_histogram:
               value: Microseconds(end_time - start_time)
+              max_size: 2
           - name: transaction.duration.summary
             description: APM service transaction aggregated metrics as summary
             include_resource_attributes:
@@ -190,6 +191,7 @@ opentelemetry-collector:
             unit: us
             exponential_histogram:
               value: Microseconds(end_time - start_time)
+              max_size: 2
           - name: transaction.duration.summary
             description: APM transaction aggregated metrics as summary
             ephemeral_resource_attribute: true
@@ -348,7 +350,6 @@ opentelemetry-collector:
       elastictrace: {} # The processor enriches traces with elastic specific requirements.
       # [LSM Interval Processor](https://github.com/elastic/opentelemetry-collector-components/tree/main/processor/lsmintervalprocessor)
       lsminterval:
-        directory: "/apmdb"
         intervals:
           - duration: 1m
             statements:
@@ -359,11 +360,6 @@ opentelemetry-collector:
             statements:
               - set(resource.attributes["metricset.interval"], "10m")
               - set(attributes["data_stream.dataset"], Concat([attributes["metricset.name"], "10m"], "."))
-              - set(attributes["processor.event"], "metric")
-          - duration: 60m
-            statements:
-              - set(resource.attributes["metricset.interval"], "60m")
-              - set(attributes["data_stream.dataset"], Concat([attributes["metricset.name"], "60m"], "."))
               - set(attributes["processor.event"], "metric")
     receivers:
       httpcheck/frontendproxy:

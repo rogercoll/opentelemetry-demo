@@ -23,12 +23,12 @@ extraEnvs:
   - name: ELASTIC_ENDPOINT
     valueFrom:
       secretKeyRef:
-        name: elastic-secret-ds
+        name: elastic-otel-secret
         key: elastic_endpoint
   - name: ELASTIC_API_KEY
     valueFrom:
       secretKeyRef:
-        name: elastic-secret-ds
+        name: elastic-otel-secret
         key: elastic_api_key
   - name: K8S_NODE_NAME
     valueFrom:

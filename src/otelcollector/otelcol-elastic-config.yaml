@@ -302,7 +302,6 @@ service:
         - signaltometrics
       processors:
         - batch
-        - resource
       receivers:
         - otlp
     metrics:
@@ -312,7 +311,6 @@ service:
         - debug
       processors:
         - batch
-        - resource
       receivers:
         - httpcheck/frontendproxy
         - otlp
@@ -327,7 +325,6 @@ service:
         - transform
         - batch
         - elastictrace
-        - resource
       receivers:
         - otlp
     metrics/aggregated-otel-metrics:

@@ -27,6 +27,8 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 - Set up [kubectl](https://kubernetes.io/docs/reference/kubectl/).
 - Set up [Helm](https://helm.sh/).
 
+![Deployment architecture](../kubernetes/elastic-helm/elastic-architecture.png "K8s architecture")
+
 ### Start the Demo
 1. Setup Elastic Observability on Elastic Cloud.
 1. Create a secret in Kubernetes with the following command.
@@ -47,7 +49,7 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
    ```
    # clone this repository
    git clone https://github.com/elastic/opentelemetry-demo
-   
+
    # switch to the kubernetes/elastic-helm directory
    cd opentelemetry-demo/kubernetes/elastic-helm
 

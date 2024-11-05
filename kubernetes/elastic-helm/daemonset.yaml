@@ -87,23 +87,40 @@ config:
       add_system_metrics: true
       add_k8s_metrics: true
       drop_original: true
-    resourcedetection/eks:
-      detectors: [env, eks]
+    resourcedetection/cluster:
+      detectors: [env, eks, gcp, aks, eks, k8snode]
       timeout: 15s
       override: true
+      k8snode:
+        auth_type: serviceAccount
       eks:
         resource_attributes:
           k8s.cluster.name:
             enabled: true
-    resourcedetection/gcp:
-      detectors: [env, gcp]
-      timeout: 2s
-      override: true
-    resource/k8s:
+      aks:
+        resource_attributes:
+          k8s.cluster.name:
+            enabled: true
+    resource/k8s: # Resource attributes tailored for services within Kubernetes.
       attributes:
-        - key: service.name
-          from_attribute: app.label.component
+        - key: service.name # Set the service.name resource attribute based on the well-known app.kubernetes.io/name label
+          from_attribute: app.label.name
           action: insert
+        - key: service.name # Set the service.name resource attribute based on the k8s.container.name attribute
+          from_attribute: k8s.container.name
+          action: insert
+        - key: app.label.name # Delete app.label.name attribute previously used for service.name
+          action: delete
+        - key: service.version # Set the service.version resource attribute based on the well-known app.kubernetes.io/version label
+          from_attribute: app.label.version
+          action: insert
+        - key: app.label.version # Delete app.label.version attribute previously used for service.version
+          action: delete
+    resource/hostname:
+      attributes:
+        - key: host.name
+          from_attribute: k8s.node.name
+          action: upsert
     attributes/dataset:
       actions:
         - key: event.dataset
@@ -317,15 +334,15 @@ config:
     pipelines:
       logs:
         receivers: [filelog]
-        processors: [batch, k8sattributes, resourcedetection/system, resourcedetection/eks, resourcedetection/gcp, resource/demo, resource/k8s, resource/cloud]
+        processors: [batch, k8sattributes, resourcedetection/cluster, resource/hostname, resource/demo, resource/k8s, resource/cloud]
         exporters: [debug, elasticsearch/otel]
       metrics:
         receivers: [hostmetrics, kubeletstats]
-        processors: [batch, k8sattributes, elasticinframetrics, resourcedetection/system, resource/demo, resourcedetection/eks, resourcedetection/gcp, resource/k8s, resource/cloud, attributes/dataset, resource/process]
+        processors: [batch, k8sattributes, elasticinframetrics, resourcedetection/cluster, resource/hostname, resource/demo, resource/k8s, resource/cloud, attributes/dataset, resource/process]
         exporters: [debug, elasticsearch/ecs]
       metrics/otel:
         receivers: [kubeletstats]
-        processors: [batch, k8sattributes, resourcedetection/system, resource/demo, resourcedetection/eks, resourcedetection/gcp, resource/k8s, resource/cloud]
+        processors: [batch, k8sattributes, resourcedetection/cluster, resource/hostname, resource/demo, resource/k8s, resource/cloud]
         exporters: [debug, elasticsearch/otel]
       traces: null
     telemetry:

@@ -33,7 +33,7 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 1. Setup Elastic Observability on Elastic Cloud.
 2. Create a secret in Kubernetes with the following command.
    ```
-   kubectl create secret generic elastic-otel-secret \
+   kubectl create secret generic elastic-secret-otel \
      --from-literal=elastic_endpoint='YOUR_ELASTICSEARCH_ENDPOINT' \
      --from-literal=elastic_api_key='YOUR_ELASTICSEARCH_API_KEY'
    ```

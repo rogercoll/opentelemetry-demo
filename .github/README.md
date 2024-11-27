@@ -57,14 +57,19 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
    helm install -f deployment.yaml my-otel-demo open-telemetry/opentelemetry-demo
    ```
 
+Additionally, this EDOT Collector configuration includes the following components for comprehensive Kubernetes monitoring:
+  - [K8s Objects Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sobjectsreceiver): Captures detailed information about Kubernetes objects.
+  - [K8s Cluster Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/k8sclusterreceiver): Collects metrics and metadata about the overall cluster state.
+
 #### Kubernetes monitoring (daemonset)
 
-This demo already enables cluster level metrics collection with `clusterMetrics` and
-Kubernetes events collection with `kubernetesEvents`.
+The `daemonset` EDOT collector is configured with the components to monitor node-level metrics and logs, ensuring detailed insights into individual Kubernetes nodes:
 
-In order to add Node level metrics collection we can run an additional Otel collector Daemonset with the following:
+- [Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetrics): Collects system-level metrics such as CPU, memory, and disk usage from the host.
+- [Kubelet Stats Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kubeletstats): Gathers pod and container metrics directly from the kubelet.
+- [Filelog Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelog): Ingests and parses log files from nodes, providing detailed log analysis.
 
-Execute the following command to deploy the OpenTelemetry Collector to your Kubernetes cluster, in the same directory `kubernetes/elastic-helm` in this repository.
+To deploy the EDOT Collector to your Kubernetes cluster, ensure the `elastic-secret-otel` Kubernetes secret is created (if it doesn't already exist). Then, run the following command from the `kubernetes/elastic-helm` directory in this repository.
 
 ```
 # deploy the Elastic OpenTelemetry collector distribution through helm install

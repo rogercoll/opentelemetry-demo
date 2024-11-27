@@ -7,6 +7,23 @@ the release.
 
 ## Unreleased
 
+* [grafana] Update grafana to 11.3.0
+  ([#1764](https://github.com/open-telemetry/opentelemetry-demo/pull/1764))
+* [chore] Move build args to .env file
+  ([#1767](https://github.com/open-telemetry/opentelemetry-demo/pull/1767))
+* [frontendproxy] add access logs
+  ([#1768](https://github.com/open-telemetry/opentelemetry-demo/pull/1768))
+* [grafana] Fix Dashboards
+  ([#1779](https://github.com/open-telemetry/opentelemetry-demo/pull/1779))
+* [accountingservice] bump OpenTelemetry .NET Automatic Instrumentation
+  to 1.9.0 ([#1780](https://github.com/open-telemetry/opentelemetry-demo/pull/1780))
+* [chore] update memory limits for flagd, flagdui, and loadgenerator
+  ([#1786](https://github.com/open-telemetry/opentelemetry-demo/pull/1786))
+* [chore] Add multi-platform build support
+  ([#1785](https://github.com/open-telemetry/opentelemetry-demo/pull/1785))
+
+## 1.12.0
+
 * [accountingservice] allow running the container with non root user
   ([#1692](https://github.com/open-telemetry/opentelemetry-demo/pull/1692))
 * [chore] Add yamllint to `make all`
@@ -20,13 +37,9 @@ the release.
 * [accountingservice] bump OpenTelemetry .NET Automatic Instrumentation
   to 1.8.0 together with other dependencies
   ([#1727](https://github.com/open-telemetry/opentelemetry-demo/pull/1727))
-* [chore] Fix binding for host's volume mount
-  ([#1728](https://github.com/open-telemetry/opentelemetry-demo/pull/1728))
 * [frontend] fix imageSlowLoad headers not applied
   to 1.8.0 together with other dependencies
   ([#1733](https://github.com/open-telemetry/opentelemetry-demo/pull/1733))
-* [chore] Move opensearch image version to .env file
-  ([#1743](https://github.com/open-telemetry/opentelemetry-demo/pull/1743))
 * [cartservice] Propagate cartservice exceptions
   ([#1744](https://github.com/open-telemetry/opentelemetry-demo/pull/1744))
 * [cartservice] Update cart service to fail when cartServiceFailure is enabled

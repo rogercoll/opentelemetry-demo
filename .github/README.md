@@ -12,11 +12,11 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 
 ## Docker compose
 
-1. Start a free trial on [Elastic Cloud](https://cloud.elastic.co/) and copy the `endpoint` and `secretToken` from the Elastic APM setup instructions in your Kibana.
-1. Open the file `src/otelcollector/otelcol-elastic-config.yaml` in an editor and replace the following two placeholders:
+1. Start a free trial on [Elastic Cloud](https://cloud.elastic.co/) and copy the `endpoint` and `secretToken` from the Elastic APM setup instructions in your Kibana. These variables will be used by the [elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter#elasticsearch-exporter) to authenticate and transmit data to your Elasticsearch instance.
+2. Open the file `src/otelcollector/otelcol-elastic-config.yaml` in an editor and replace the following two placeholders:
    - `YOUR_ELASTICSEARCH_ENDPOINT`: your Elasticsearch endpoint (*with* `https://` prefix example: `https://1234567.us-west2.gcp.elastic-cloud.com:443`).
    - `YOUR_ELASTICSEARCH_API_KEY`: your Elasticsearch API Key
-1. Start the demo with the following command from the repository's root directory:
+3. Start the demo with the following command from the repository's root directory:
    ```
    make start
    ```
@@ -27,7 +27,6 @@ Additionally, the OpenTelemetry Contrib collector has also been changed to the [
 - Set up [kubectl](https://kubernetes.io/docs/reference/kubectl/).
 - Set up [Helm](https://helm.sh/).
 
-![Deployment architecture](../kubernetes/elastic-helm/elastic-architecture.png "K8s architecture")
 
 ### Start the Demo (Kubernetes deployment)
 1. Setup Elastic Observability on Elastic Cloud.
@@ -71,6 +70,10 @@ Execute the following command to deploy the OpenTelemetry Collector to your Kube
 # deploy the Elastic OpenTelemetry collector distribution through helm install
 helm install otel-daemonset open-telemetry/opentelemetry-collector --values daemonset.yaml
 ```
+
+#### Kubernetes architecture diagram
+
+![Deployment architecture](../kubernetes/elastic-helm/elastic-architecture.png "K8s architecture")
 
 ## Explore and analyze the data With Elastic
 

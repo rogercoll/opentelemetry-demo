@@ -39,6 +39,10 @@ opentelemetry-collector:
   mode: "deployment"
   useGOMEMLIMIT: false
   resources:
+    # The high resource limits set here are due to the usage of the lsminterval processor.
+    # The # [LSM Interval Processor](https://github.com/elastic/opentelemetry-collector-components/tree/main/processor/lsmintervalprocessor)
+    # aggregates metrics in a db-backed over a defined interval and periodically
+    # forwards the latest values to the next component in the pipeline.
     limits:
       cpu: 1500m
       memory: 1500Mi

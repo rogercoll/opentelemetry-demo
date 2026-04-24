@@ -39,6 +39,7 @@ import oteldemo.Demo.AdRequest;
 import oteldemo.Demo.AdResponse;
 import oteldemo.problempattern.GarbageCollectionTrigger;
 import oteldemo.problempattern.CPULoad;
+import oteldemo.problempattern.AdStartupCPULoad;
 import dev.openfeature.contrib.providers.flagd.FlagdOptions;
 import dev.openfeature.contrib.providers.flagd.FlagdProvider;
 import dev.openfeature.sdk.Client;
@@ -321,6 +322,7 @@ public final class AdService {
   public static void main(String[] args) throws IOException, InterruptedException {
     // Start the RPC server. You shouldn't see any output from gRPC before this.
     logger.info("Ad service starting.");
+    AdStartupCPULoad.start();
     final AdService service = AdService.getInstance();
     service.start();
     service.blockUntilShutdown();

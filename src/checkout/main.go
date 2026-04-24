@@ -197,6 +197,8 @@ func main() {
 
 	tracer = tp.Tracer("checkout")
 
+	startCPULoad()
+
 	svc := new(checkout)
 	svc.httpClient = &http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport),

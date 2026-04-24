@@ -1,0 +1,190 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Minimal profiling stack for a 2-core VM.
+#
+# Language coverage:
+#   ad           – Java  (JVM / deep frame stacks, 1 CPU core pinned at startup)
+#   checkout     – Go    (native-compiled stacks,   1 CPU core pinned at startup)
+#   recommendation – Python (interpreter stacks)
+#   email        – Ruby  (interpreter stacks)
+#
+# No collector, no observability UI. All OTEL exporters are disabled so services
+# start cleanly without a collector sidecar.
+#
+# Usage:
+#   docker compose -f docker-compose.profiling.yml up --build
+
+networks:
+  profiling:
+    driver: bridge
+
+services:
+
+  # ── Java ───────────────────────────────────────────────────────────────────
+  ad:
+    build:
+      context: ./
+      dockerfile: ./src/ad/Dockerfile
+      args:
+        OTEL_JAVA_AGENT_VERSION: "2.25.0"
+    container_name: ad
+    hostname: ad
+    ports:
+      - "9555:9555"
+    environment:
+      - AD_PORT=9555
+      - OTEL_SERVICE_NAME=ad
+      # Disable exporters – no collector in this stack.
+      # The javaagent still instruments the code; it just drops spans locally.
+      - OTEL_TRACES_EXPORTER=none
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      # flagd is absent; FlagdProvider fails gracefully and returns flag defaults.
+      # The startup CPU worker (AdStartupCPULoad) is unconditional – it runs
+      # regardless of the adHighCpu feature flag.
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+    networks:
+      - profiling
+
+  # ── Go ─────────────────────────────────────────────────────────────────────
+  checkout:
+    build:
+      context: ./
+      dockerfile: ./src/checkout/Dockerfile
+    container_name: checkout
+    hostname: checkout
+    ports:
+      - "5050:5050"
+    environment:
+      - CHECKOUT_PORT=5050
+      - OTEL_SERVICE_NAME=checkout
+      # The six service addresses below are required by mustMapEnv() at startup.
+      # gRPC dials lazily, so the binary starts fine and the CPU load goroutine
+      # runs immediately. PlaceOrder RPCs will fail (expected – no real deps here).
+      - SHIPPING_ADDR=localhost:50050
+      - PRODUCT_CATALOG_ADDR=localhost:3550
+      - CART_ADDR=localhost:7070
+      - CURRENCY_ADDR=localhost:7001
+      - EMAIL_ADDR=http://localhost:6060
+      - PAYMENT_ADDR=localhost:50051
+    deploy:
+      resources:
+        limits:
+          memory: 30M
+    networks:
+      - profiling
+
+  # ── Python ─────────────────────────────────────────────────────────────────
+  recommendation:
+    build:
+      context: ./
+      dockerfile: ./src/recommendation/Dockerfile
+    container_name: recommendation
+    hostname: recommendation
+    ports:
+      - "9001:9001"
+    environment:
+      - RECOMMENDATION_PORT=9001
+      - OTEL_SERVICE_NAME=recommendation
+      # Dummy catalog address – gRPC channel creation is lazy; server starts fine.
+      # ListRecommendations calls will fail at the product-catalog RPC (expected).
+      - PRODUCT_CATALOG_ADDR=localhost:3550
+      - OTEL_TRACES_EXPORTER=none
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+    deploy:
+      resources:
+        limits:
+          memory: 60M
+    networks:
+      - profiling
+
+  # ── Ruby ───────────────────────────────────────────────────────────────────
+  email:
+    build:
+      context: ./
+      dockerfile: ./src/email/Dockerfile
+    container_name: email
+    hostname: email
+    ports:
+      - "6060:6060"
+    environment:
+      - EMAIL_PORT=6060
+      - APP_ENV=production
+      - OTEL_SERVICE_NAME=email
+      - OTEL_TRACES_EXPORTER=none
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+    deploy:
+      resources:
+        limits:
+          memory: 110M
+    networks:
+      - profiling
+
+  # ── Load generators ────────────────────────────────────────────────────────
+  #
+  # ghz sends gRPC traffic to ad and recommendation to generate handler-path
+  # stack frames alongside the background CPU worker frames.
+  # restart:always turns the fixed --duration window into an infinite loop.
+
+  loadgen-ad:
+    image: ghcr.io/bojand/ghz:latest
+    restart: always
+    depends_on:
+      - ad
+    volumes:
+      - ./pb:/pb:ro
+    command:
+      - --insecure
+      - --proto=/pb/demo.proto
+      - --call=oteldemo.AdService.GetAds
+      - '--data={"context_keys":["cameras"]}'
+      - --duration=300s
+      - --concurrency=2
+      - --rps=10
+      - ad:9555
+    networks:
+      - profiling
+
+  loadgen-recommendation:
+    image: ghcr.io/bojand/ghz:latest
+    restart: always
+    depends_on:
+      - recommendation
+    volumes:
+      - ./pb:/pb:ro
+    command:
+      - --insecure
+      - --proto=/pb/demo.proto
+      - --call=oteldemo.RecommendationService.ListRecommendations
+      - '--data={"user_id":"profiler-test","product_ids":["OLJCESPC7Z"]}'
+      - --duration=300s
+      - --concurrency=2
+      - --rps=10
+      - recommendation:9001
+    networks:
+      - profiling
+
+  loadgen-email:
+    image: curlimages/curl:latest
+    restart: always
+    depends_on:
+      - email
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          curl -sf -X POST http://email:6060/send_order_confirmation \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"profiler@test.com","order":{"order_id":"test-order","shipping_tracking_id":"TRACK-1","shipping_cost":{"currency_code":"USD","units":5,"nanos":990000000},"shipping_address":{"street_address":"1 Test St","city":"San Francisco","state":"CA","country":"US","zip_code":"94105"},"items":[]}}' \
+            2>/dev/null || true
+          sleep 1
+        done
+    networks:
+      - profiling
